@@ -1,3 +1,6 @@
+#include "MTS.h"
+#include "Detector.h"
+
 #include "llvm/Pass.h"
 #include "llvm/IR/Function.h"
 #include "llvm/Support/raw_ostream.h"
@@ -7,6 +10,8 @@
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/IR/Module.h"
+#include "llvm/Analysis/LoopPass.h"
+
 using namespace llvm;
 
 namespace
@@ -16,17 +21,40 @@ struct SkeletonPass : public ModulePass
   static char ID;
   SkeletonPass() : ModulePass(ID) {}
 
+  virtual void getAnalysisUsage(AnalysisUsage &AU) const
+  {
+    AU.setPreservesCFG();
+    AU.addRequired<LoopInfoWrapperPass>();
+  }
+
   bool runOnModule(Module &M) override;
 };
 } // namespace
 
+std::string bb_getname(BasicBlock *bb)
+{
+  std::string bb_name;
+  bb_name = bb->getName();
+
+  if (bb_name.empty())
+  {
+    std::string Str;
+    raw_string_ostream OS(Str);
+    bb->printAsOperand(OS, false);
+    std::string func_name = bb->getParent()->getName();
+    bb_name = func_name + OS.str();
+    bb->setName(bb_name);
+    //errs() << OS.str() << "\n";
+  }
+
+  return bb_name;
+}
+
 bool SkeletonPass::runOnModule(Module &M)
 {
-  LLVMContext &Ctx = M.getContext();
-  std::vector<Type *> paramTypes = {Type::getInt32Ty(Ctx)};
-  Type *retType = Type::getVoidTy(Ctx);
-  FunctionType *logFuncType = FunctionType::get(retType, paramTypes, false);
-
+  //output module information
+  errs() << "Begin: " << M.getModuleIdentifier() << "\n";
+  /*
   std::string module_name = M.getName();
   char *oldname, *p, *tempp;
   oldname = new char[module_name.size() + 1];
@@ -40,34 +68,34 @@ bool SkeletonPass::runOnModule(Module &M)
   module_name = tempp;
   delete[] oldname;
   errs() << "Module name: " << module_name << "\n";
-
-  Constant *logFunc = M.getOrInsertFunction("logop", logFuncType);
-
+  */
+  auto MMC = MyModuleContext(M);
+  auto i = 0;
   for (auto &F : M)
   {
-    std::string func_name = F.getName();
-    errs() << "Func name: " << func_name << "\n";
-    for (auto &BB : F)
+    if (F.size() == 0)
+      continue;
+    LoopInfo &LI = getAnalysis<LoopInfoWrapperPass>(F).getLoopInfo();
+    vector<Loop *> workspace;
+    for (auto it = LI.begin(); it != LI.end(); it++)
     {
-      for (auto &I : BB)
+      Loop *ll = *it;
+      ll->print(dbgs());
+      errs() << "Loop: "
+             << "\n";
+      workspace.push_back(*it);
+      for (BasicBlock *BB : (*it)->getBlocks())
       {
-        if (auto *op = dyn_cast<BinaryOperator>(&I))
-        {
-          // Insert *after* `op`.
-          IRBuilder<> builder(op);
-          builder.SetInsertPoint(&BB, ++builder.GetInsertPoint());
-
-          // Insert a call to our function.
-          Value *args[] = {op};
-          builder.CreateCall(logFunc, args);
-        }
+        std::string bb_name = bb_getname(BB);
+        errs() << "BB name: " << bb_name << "\n";
       }
     }
   }
 
-  return true;
+  return false;
 }
 
+//register llvm pass
 char SkeletonPass::ID = 0;
 
 static RegisterPass<SkeletonPass> X("test", "Test Pass");
