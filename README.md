@@ -13,11 +13,11 @@ Build:
 
 Build2:
 
-    $ gcc -c rtlib.c 
+    $ gcc -c rtdetector.c 
     
     $ clang -Xclang -load -Xclang build/skeleton/libSkeletonPass.so -c example.c
     
-    $ gcc ./example.o ../rtlib.o
+    $ gcc ./example.o ../rtdetector.o
 
 Run:
     $ ./a.out
