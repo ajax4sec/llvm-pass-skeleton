@@ -506,8 +506,10 @@ void MyLoop::computeIndvars()
     return;
   // FIXME: function classof cannot take a iterator as the parameter?
   // TheLoop.print(errs());
-  for (auto inst = header->begin();
-       inst != header->end() && PHINode::classof(&(*inst)); ++inst)
+#ifdef MYDBG
+  errs() << preheader << " | " << header << " | " << latch << "\n";
+#endif 
+  for (auto inst = header->begin(); inst != header->end() && PHINode::classof(&(*inst)); ++inst)
   {
     auto phi = dyn_cast<PHINode>(inst);
     MTSPhiNode *mtsphi = (MTSPhiNode *)Parent.getMTSNodeFromValue(phi);
@@ -562,7 +564,7 @@ void MyLoop::computeIndvars()
           op_symbol = '+';
           num = -num;
         }
-      // errs() << op_symbol << "  " << num << "\n";
+      errs() << op_symbol << "  " << num << "\n";
       auto *idv = new LoopIndvar(*mtsphi, this, op_symbol, num);
       Indvars.push_back(idv);
       // errs() << "Indvar Added\n";

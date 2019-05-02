@@ -145,7 +145,8 @@ void SDetector::instrumentForMalloc(MTSNode *node) {
   auto inst = node->getInstruction();
   auto CI = dyn_cast<CallInst>(inst);
   auto numArgs = CI->getNumArgOperands();
-  assert(numArgs != 1 && "the number of malloc's args is not 1.");
+  errs() << "*********** numArgs:" << numArgs << "***********\n";
+  assert(numArgs == 1);
   auto M = inst->getModule();
   auto sz = CI->getArgOperand(0);
   auto rt = dyn_cast<Value>(inst);
@@ -166,7 +167,7 @@ void SDetector::instrumentForRealloc(MTSNode *node) {
   auto inst = node->getInstruction();
   auto CI = dyn_cast<CallInst>(inst);
   auto numArgs = CI->getNumArgOperands();
-  assert(numArgs != 2 && "the number of realloc's args is not 2.");
+  assert(numArgs == 2);
   auto M = inst->getModule();
   auto p = CI->getArgOperand(0);
   auto sz = CI->getArgOperand(1);
@@ -189,7 +190,7 @@ void SDetector::instrumentForCalloc(MTSNode *node) {
   auto inst = node->getInstruction();
   auto CI = dyn_cast<CallInst>(inst);
   auto numArgs = CI->getNumArgOperands();
-  assert(numArgs != 2 && "the number of calloc's args is not 2.");
+  assert(numArgs == 2);
   auto M = inst->getModule();
   auto num = CI->getArgOperand(0);
   auto sz = CI->getArgOperand(1);
@@ -212,7 +213,7 @@ void SDetector::instrumentForFree(MTSNode *node) {
   auto inst = node->getInstruction();
   auto CI = dyn_cast<CallInst>(inst);
   auto numArgs = CI->getNumArgOperands();
-  assert(numArgs != 1 && "the number of free's args is not 1.");
+  assert(numArgs == 1);
   auto M = inst->getModule();
   auto p = CI->getArgOperand(0);
   IRBuilder<> Builder(inst->getNextNode());
@@ -228,15 +229,14 @@ void SDetector::analysisMemAccess(MTSMemAccess *mn) {
   auto M = mn->getInstruction()->getModule();
   auto voidTy = Type::getVoidTy(M->getContext());
   auto base = mn->getBasement();
-  errs() << "Base: ";
+#ifdef MYDBG
+  errs() << "    Base: ";
   base->print(errs());
   errs() << "\n";
-
-  errs() << "inst: ";
+  errs() << "    inst: ";
   mn->getInstruction()->print(errs());
   errs() << "\n";
-  base->print(errs());
-  errs() << "base\n";
+#endif
   // Constant, don't have to instrument.
   if (mn->mustTakeFullInstrumentation()) {
     // if (true) {

@@ -34,10 +34,10 @@ uint64_t MASK[4] = {0b11, 0b1100, 0b110000, 0b11000000};
 
 void __init_main() {
   printf("Start\n");
-  SHADOW_BASE = (uint64_t)malloc(PRIME * sizeof(int) * 2);
+  //SHADOW_BASE = (uint64_t)malloc(PRIME * sizeof(int) * 2);
   LOW_SHADOW_BASE = (LowShadowObj *)malloc(536870912 * sizeof(LowShadowObj));
-  LOW_SHADOW_FREE_BASE =
-      (LowShadowObj *)malloc(536870912 * sizeof(LowShadowObj));
+  LOW_SHADOW_FREE_BASE = (LowShadowObj *)malloc(536870912 * sizeof(LowShadowObj));
+  if(LOW_SHADOW_BASE == NULL || LOW_SHADOW_FREE_BASE == NULL) printf("malloc error\n");
 }
 
 void __fini_main() {
@@ -71,7 +71,7 @@ void __fini_main() {
     printf("%p, %p\n", LOW_SHADOW_FREE_BASE[i].ptr,
            LOW_SHADOW_FREE_BASE[i].caller);
   }
-  free(SHADOW_BASE);
+  //free(SHADOW_BASE);
   free(LOW_SHADOW_BASE);
   free(LOW_SHADOW_FREE_BASE);
 }
