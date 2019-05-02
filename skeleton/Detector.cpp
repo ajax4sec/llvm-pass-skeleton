@@ -145,7 +145,6 @@ void SDetector::instrumentForMalloc(MTSNode *node) {
   auto inst = node->getInstruction();
   auto CI = dyn_cast<CallInst>(inst);
   auto numArgs = CI->getNumArgOperands();
-  errs() << "*********** numArgs:" << numArgs << "***********\n";
   assert(numArgs == 1);
   auto M = inst->getModule();
   auto sz = CI->getArgOperand(0);

@@ -15,9 +15,9 @@ int main(int argc, const char **argv)
     int num;
     int * buffer;
     scanf("%i", &num);
-    for (int i = 1; i < num; i++)
+    for (int i = 1; i < 5; i++)
     {
-        buffer = (int *)malloc(num * sizeof(int));
+        buffer = (int *)malloc(5 * sizeof(int));
         for (int j = 0; j < 4; j++)
         {
             buffer[i-1] = i + j;
