@@ -17,7 +17,7 @@ Build2:
     
     $ clang -Xclang -load -Xclang build/skeleton/libSkeletonPass.so -c example.c
     $ gcc ./example.o ../rtdetector.o
-    
+    or
     $ clang -Xclang -load -Xclang ./build/skeleton/libSkeletonPass.so -x none  ./rtdetect.o example.c
 
 Run:
